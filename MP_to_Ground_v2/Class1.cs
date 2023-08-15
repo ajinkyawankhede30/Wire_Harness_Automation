@@ -58,11 +58,16 @@ namespace MP_to_Ground_v2
             //multiPorts[1] = multiPort2;
             
             NXOpen.Assemblies.Component rootComp = workpart.ComponentAssembly.RootComponent;
+
+            //Collect multi-ports present inside each child components
             findMultiPorts(rootComp);
             mlogger.writeLog("Multiports collection complete...");
             mlogger.flushLog();
+
             multiPorts = new MultiPort[LmultiPorts.Count];
             LmultiPorts.CopyTo(multiPorts);
+
+            //Create multi-port to ground splines
             multiPort_to_Grnd();
         }
 
@@ -94,6 +99,7 @@ namespace MP_to_Ground_v2
         private static void multiPort_to_Grnd()
         {
             List<Point> intermediatepts = new List<Point>();
+            #region
             //Feature[] features = workpart.Features.GetFeatures();
 
             //int x = 0;
@@ -107,12 +113,15 @@ namespace MP_to_Ground_v2
             //        x++;
             //    }
             //}
+            #endregion
 
+            //Collect all landing points present in layer 98.
             Point[] points = workpart.Points.ToArray();
             landingPts = Array.FindAll(points, a => a.Layer == 98);
 
             for (int i = 0; i < multiPorts.Length; i++)
             {
+                //CHECK IF MULTI-PORT HAS ATTRIBUTE TO AVOID OVER-RIDING OF SPLINES
                 if (!multiPorts[i].HasUserAttribute("is_MP_to_Ground_done", NXObject.AttributeType.Boolean, -1))
                 {
                     NXOpen.Direction mpDir;
@@ -126,11 +135,13 @@ namespace MP_to_Ground_v2
                     //double[] dparams = { 25.0, 75.0 };
                     //double[] doffset = { 5.0, 2.0 };
 
+                    //READ EXISTING JSON FILE
                     double[] dparams;
                     double[] doffset;
                     Params myParams = new Params();
                     myParams.ReadJson(out dparams, out doffset);
 
+                    //INSERT ROUTING CONTROL POINTS
                     Point[] intermPts = IncertRCP(startPt, mpDir, landingPts[ptInd], dparams, doffset);
 
                     if (intermPts.Length > 0)

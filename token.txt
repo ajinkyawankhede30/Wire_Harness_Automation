@@ -1,0 +1,4 @@
+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
+
+
+git remote add origin https://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@github.com/ajinkyawankhede30/Wire_Harness_Automation.git
